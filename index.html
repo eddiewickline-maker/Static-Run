@@ -1245,6 +1245,8 @@ async function hostStart(){
   open(0);
 }
 function hostConn(conn){
+  if(current==='invite') inviteStatus('Someone is connecting…');
+  conn.on('open',()=>{ if(current==='invite') inviteStatus('Linked with a friend’s phone…'); });
   conn.on('data',d=>hostData(conn,d));
   conn.on('close',()=>{ const id=conn.pid; if(id&&NET.conns.get(id)===conn){ NET.conns.delete(id); const r=NET.rp.get(id); NET.rp.delete(id); if(r&&G) say(`${r.name.toUpperCase()} LEFT.`,3); renderInvite(); } });
   conn.on('error',()=>{});
@@ -1271,7 +1273,8 @@ async function joinGame(rawCode,name){
   const code=String(rawCode).toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(code.length!==4) return joinMsg('Invite codes are 4 letters and numbers.');
   if(NET.role) return;
-  joinMsg('Connecting…'); $('joinBtn').textContent='Connecting…';
+  let step=1; const stage=(n,t)=>{ step=n; joinMsg(`Step ${n} of 3: ${t}`); };
+  stage(1,'reaching the game service…'); $('joinBtn').textContent='Connecting…';
   const reset=t=>{ joinMsg(t); $('joinBtn').textContent='Join'; };
   try{ await loadPeerLib(); }catch(e){ return reset("Couldn't load the multiplayer helper. Check your internet connection."); }
   const m=me(); setMyName(name);
@@ -1279,11 +1282,16 @@ async function joinGame(rawCode,name){
   try{ peer=new Peer(); }catch(e){ return reset("Couldn't connect."); }
   NET.peer=peer;
   const fail=t=>{ if(done) return; done=true; clearTimeout(timer); try{ peer.destroy(); }catch(e){} NET.peer=null; NET.conn=null; reset(t); };
-  const timer=setTimeout(()=>fail("Couldn't reach that game. Check the code, make sure the host has Invite friends turned on, and try again. Being on the same Wi-Fi helps."),15000);
-  peer.on('error',err=>{ if(!done) fail(err&&err.type==='peer-unavailable'?'No game with that code right now. Check the code, and make sure the host has Invite friends turned on.':"Couldn't connect. Check your internet and try again."); });
+  const why={1:"Stuck at step 1: this phone couldn't reach the game service. Check the internet connection and try again.",
+    2:"Stuck at step 2: the two phones found each other but couldn't link up. Put both phones on the same Wi-Fi (not cell data) and try again.",
+    3:"Stuck at step 3: the phones linked, but the host's game didn't answer. Make sure the host's screen is on with the game open, and try again."};
+  const timer=setTimeout(()=>fail(why[step]),25000);
+  peer.on('error',err=>{ if(!done) fail(err&&err.type==='peer-unavailable'?'No game with that code right now. Check the code, and make sure the host has Invite friends turned on.':`Couldn't connect at step ${step} (${err&&err.type||'unknown'}). Try again on Wi-Fi.`); });
   peer.on('open',()=>{
+    stage(2,'found the game service, linking the phones…');
     const conn=peer.connect(PEER_PREFIX+code,{reliable:true}); NET.conn=conn;
-    conn.on('open',()=>conn.send({t:'hello',v:NET_V,id:m.id,name:m.name}));
+    conn.on('open',()=>{ stage(3,'linked! Waiting for the host\u2019s game to answer…'); conn.send({t:'hello',v:NET_V,id:m.id,name:m.name}); });
+    conn.on('error',e=>{ if(!done) fail(`Lost the link at step ${step}. Try again on Wi-Fi.`); });
     conn.on('data',d=>{
       if(!d||typeof d!=='object') return;
       if(d.t==='welcome'&&!done){ done=true; clearTimeout(timer); $('joinBtn').textContent='Join'; joinMsg(''); guestStart(d); }
