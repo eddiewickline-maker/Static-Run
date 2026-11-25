@@ -125,11 +125,16 @@ ul{margin:6px 0;padding-left:22px} li{margin:3px 0}
       <button class="amb" id="bBuild">● Build your own course</button>
       <button class="small" id="bLoad">Load a course code</button>
     </div>
+    <h3>Play with friends</h3>
+    <p class="note">Ask the host for their 4-letter invite code. The host's game has to stay open while you play.</p>
+    <div class="row"><input id="joinName" maxlength="14" placeholder="Your name" aria-label="Your name" style="flex:1 1 140px"><input id="joinCode" maxlength="4" placeholder="CODE" aria-label="Invite code" style="flex:0 1 110px;text-transform:uppercase;letter-spacing:.15em"><button id="joinBtn">Join</button></div>
+    <p class="note" id="joinMsg" role="status"></p>
   </div></div>
 
   <div class="ov" id="channels"><div class="card">
     <div class="row" style="justify-content:space-between;margin:0"><h2>Channels</h2><button class="small" data-back="menu">Back</button></div>
-    <div class="row"><button class="small hardBtn">Hardcore: off</button><span class="note">One hit and the course starts over.</span></div>
+    <div class="row"><button class="small hardBtn">Hardcore: off</button><button class="small amb inviteOpen">Invite friends</button></div>
+    <p class="note hostLine"></p>
     <div id="chList"></div>
   </div></div>
 
@@ -138,7 +143,8 @@ ul{margin:6px 0;padding-left:22px} li{margin:3px 0}
     <div class="row"><input id="newName" maxlength="40" placeholder="Lava Mountain of Doom" aria-label="Name your new course">
       <select id="newSize" aria-label="Course size"><option value="n">Normal size</option><option value="b" selected>Big</option><option value="h">Huge</option></select>
       <button class="amb" id="newBtn">New course</button></div>
-    <div class="row"><button class="small hardBtn">Hardcore: off</button></div>
+    <div class="row"><button class="small hardBtn">Hardcore: off</button><button class="small amb inviteOpen">Invite friends</button></div>
+    <p class="note hostLine"></p>
     <div id="courseList"></div>
     <p class="note" id="storeNote"></p>
   </div></div>
@@ -160,7 +166,29 @@ ul{margin:6px 0;padding-left:22px} li{margin:3px 0}
 
   <div class="ov" id="pause"><div class="card">
     <h2>PAUSED</h2>
-    <div class="row"><button id="resumeBtn">Resume</button><button class="small" id="restartBtn">Start over</button><button class="small red" id="quitBtn">Quit</button></div>
+    <div class="row"><button id="resumeBtn">Resume</button><button class="small" id="restartBtn">Start over</button><button class="small amb" id="inviteBtn">Invite friends</button><button class="small red" id="quitBtn">Quit</button></div>
+  </div></div>
+
+  <div class="ov" id="invite"><div class="card">
+    <div class="row" style="justify-content:space-between;margin:0"><h2>Invite friends</h2><button class="small" id="inviteClose">Back</button></div>
+    <div id="inviteOff">
+      <p class="note">Friends type your invite code on their main menu, under "Play with friends." Up to 3 friends can join. Whatever course you pick, they play it with you. Keep your game open while they play.</p>
+      <div class="row"><input id="hostName" maxlength="14" placeholder="Your name" aria-label="Your name" style="flex:1 1 160px"><button id="hostBtn">Get an invite code</button></div>
+    </div>
+    <div id="inviteOn" style="display:none">
+      <p class="note">Your invite code:</p>
+      <p id="inviteCode" style="font-size:64px;line-height:1;color:var(--grn);letter-spacing:.2em;margin:6px 0 10px"></p>
+      <p class="note" id="invitePlayers"></p>
+      <div class="row"><button class="small red" id="stopHostBtn">Stop sharing</button></div>
+    </div>
+    <p class="note" id="inviteMsg" role="status"></p>
+    <p class="note">Playing with friends only works when the game is opened from its own web address (like your GitHub page). If a friend can't connect, try having both of you on the same Wi-Fi.</p>
+  </div></div>
+
+  <div class="ov" id="wait"><div class="card" style="text-align:center">
+    <h2>PLEASE STAND BY</h2>
+    <p class="note" id="waitMsg"></p>
+    <div class="row" style="justify-content:center"><button class="small red" id="waitLeave">Leave game</button></div>
   </div></div>
 
   <div class="ov" id="dead"><div class="card" style="text-align:center">
@@ -195,6 +223,10 @@ ul{margin:6px 0;padding-left:22px} li{margin:3px 0}
     <li><b>Lurker:</b> only moves when you look away. <b>Rolling Giant:</b> rolls back and forth. Stay above it.</li>
     <li><b>Gummy Worms:</b> wiggle toward you. <b>Wizard:</b> sparkles, then shoots lightning. Walls block it.</li>
     <li><b>Baba Yaga:</b> swoops down from the sky. <b>Alien:</b> its beam lifts you up. Duck under a roof. <b>Bigfoot:</b> charges when he sees you, but he can't jump lava.</li></ul>
+    <h3>Playing with friends</h3>
+    <ul><li><b>Host:</b> tap <b>Invite friends</b> (in the channel list or the pause menu) and <b>Get an invite code</b>. Then pick any course, and your friends play it with you.</li>
+    <li><b>Friend:</b> on the main menu, type your name and the code under <b>Play with friends</b>, and tap Join.</li>
+    <li>Everyone sees each other run. When anyone pops a monster with their flashlight, it pops for everyone.</li></ul>
     <h3>Building</h3>
     <ul><li>Pick a piece at the bottom, then tap or drag to place it. <b>Move</b> slides around, <b>Eraser</b> removes things, <b>Scene</b> changes the background.</li>
     <li><b>▶ Test</b> plays your course. While testing, tap <b>FLY</b> (or <kbd>G</kbd>) to fly around: you can't get hurt. Courses save themselves. Share them with a course code.</li></ul>
@@ -413,6 +445,8 @@ function startLevel(src){
   G.carts=carts.map(c=>{ const s=railSurf(t,W,c.tx,c.ty)[0]; return {hx:c.tx+.5-.65, hy:s-.8, w:1.3, h:.8}; });
   G.p={x:G.cp.x,y:G.cp.y,w:.7,h:1.7,vx:0,vy:0,facing:1,onGround:false,coy:0,jumping:false,cart:null,exitCool:0,inv:0,knock:0,safe:{...G.cp}};
   resetThings(); floaties=[]; parts=[]; msg.t=0; jumpBuf=0;
+  if(NET.role==='host'&&src!==NET.src){ NET.src=src; NET.lv++; broadcast({t:'level',lv:NET.lv,L:levelPayload(src)}); }
+  G.lv=NET.role?NET.lv:0;
   G.snap=true; mode='play'; showOv(null); initAudio();
 }
 function resetThings(){
@@ -466,13 +500,13 @@ function drink(){
   if(G.hearts>=G.maxH){ say('YOUR HEARTS ARE ALREADY FULL.',2); return; }
   G.potions--; G.hearts++; const p=G.p; burst(p.x+p.w/2,p.y+.4,['#ff4a6a','#ffb0c0'],16,3); [440,554,659].forEach((f,k)=>setTimeout(()=>tone(f,.1,'sine',.05),k*70));
 }
-function popMob(m){
-  m.dead=true; const cx=m.x+m.w/2, cy=m.y+m.h/2;
+function popMob(m,remote){
+  m.dead=true; if(NET.role&&!remote) netAll({t:'pop',lv:G.lv,i:G.mobs.indexOf(m)}); const cx=m.x+m.w/2, cy=m.y+m.h/2;
   const col={24:['#ff4fa3','#7dff4f','#ffd23f','#4fd8ff'],26:['#8a2a2a','#c9c1a5','#5b4631'],27:['#9dff7a','#8a909c','#ffd23f'],28:['#4a3626','#7a5a44']}[m.k]||['#d8d4c4','#888','#fff'];
   burst(cx,cy,col,30,6); floaties.push({text:'POP!',x:cx,y:m.y,t:1.2}); tone(900,.25,'square',.04,120); staticBurst(.2,.04);
 }
 function win(){
-  if(G.won) return; G.won=true; const p=G.p; p.vx=0;
+  if(G.won) return; G.won=true; const p=G.p; p.vx=0; if(NET.role) netAll({t:'won',lv:G.lv,name:NET.role==='host'?NET.hostName:me().name});
   tone(523,.12,'triangle',.05); setTimeout(()=>tone(659,.12,'triangle',.05),120); setTimeout(()=>tone(784,.25,'triangle',.05),240);
   const src=G.src, tm=G.time, ch=src.ch;
   if(ch!=null&&!G.cheat){ const k=String(ch); prog.clear[k]=1; if(G.hard) prog.hard[k]=1; if(!(prog.best[k]<=tm)) prog.best[k]=tm; prog.tapes[k]=Math.max(prog.tapes[k]||0,G.got); saveProg(); }
@@ -819,19 +853,24 @@ function drawTile(v,px,py,x,y,tiles,W,st){
       for(let k=0;k<3;k++){ const ph=wrapX(now*1.2+k*.33,1); ctx.fillStyle=`rgba(150,240,130,${.5*(1-ph)})`; circ(px+6+k*6+Math.sin(now*3+k)*2,py+5-ph*16,2+ph*3); } break; }
   }
 }
-function drawKid(cx,top,facing,walk,shades){
+function drawKid(cx,top,facing,walk,shades,col){
+  const coat=col||'#c9a01d';
   ctx.save(); ctx.translate(cx,top); ctx.scale(facing,1); const h=40.8;
   ctx.fillStyle='#1f1e1a'; rect(-6,h-11,5,11-Math.max(0,walk)); rect(1,h-11,5,11-Math.max(0,-walk));
   ctx.fillStyle='#3d2c1c'; rect(-7,h-3-Math.max(0,walk),6,3); rect(1,h-3-Math.max(0,-walk),7,3);
-  ctx.fillStyle='#c9a01d'; rect(-8,h-27,16,18); ctx.fillStyle='#a2810f'; rect(-8,h-12,16,3); ctx.fillStyle='#e0b627'; rect(-8,h-27,16,2);
-  ctx.fillStyle='#7d6410'; rect(2,h-22,2,2); rect(2,h-17,2,2);
-  ctx.fillStyle='#d4aa22'; rect(-8,h-41,16,15); ctx.fillStyle='#e8c49a'; rect(-2,h-37,9,10); ctx.fillStyle='#b8922a'; rect(-8,h-41,16,3);
+  ctx.fillStyle=coat; rect(-8,h-27,16,18); rect(-8,h-41,16,15);
+  ctx.fillStyle='rgba(0,0,0,.22)'; rect(-8,h-12,16,3); rect(-8,h-41,16,3); ctx.fillStyle='rgba(255,255,255,.18)'; rect(-8,h-27,16,2);
+  ctx.fillStyle='rgba(0,0,0,.4)'; rect(2,h-22,2,2); rect(2,h-17,2,2);
+  ctx.fillStyle='#e8c49a'; rect(-2,h-37,9,10);
   ctx.fillStyle='#141412'; rect(1,h-34,2,2); rect(5,h-34,2,2);
   if(shades){ ctx.fillStyle='#030303'; rect(-1,h-35,9,3); rect(-4,h-35,3,1); ctx.fillStyle='#ffffff'; rect(5,h-35,1,1); }
-  ctx.save(); ctx.translate(-2,h-24); ctx.rotate(walk*.12); ctx.fillStyle='#b38e17'; rect(-2,0,5,11); ctx.fillStyle='#e8c49a'; rect(-2,11,5,3); ctx.restore();
+  ctx.save(); ctx.translate(-2,h-24); ctx.rotate(walk*.12); ctx.fillStyle=coat; rect(-2,0,5,11); ctx.fillStyle='rgba(0,0,0,.15)'; rect(-2,0,5,11); ctx.fillStyle='#e8c49a'; rect(-2,11,5,3); ctx.restore();
   ctx.fillStyle='#2b2b2b'; rect(4,h-20,6,3); ctx.fillStyle='#ffe9a0'; rect(9,h-20,2,3);
   ctx.restore();
 }
+function drawCone(ox,oy,f){ const L=7.5*T, s2=(.9+7.5*.5)*T;
+  ctx.globalCompositeOperation='lighter'; const g=ctx.createLinearGradient(ox,0,ox+f*L,0); g.addColorStop(0,'rgba(255,240,170,.42)'); g.addColorStop(1,'rgba(255,240,170,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(ox,oy-4); ctx.lineTo(ox+f*L,oy-s2); ctx.lineTo(ox+f*L,oy+s2); ctx.lineTo(ox,oy+4); ctx.fill(); ctx.globalCompositeOperation='source-over'; }
 function drawWatcher(px,py,s,lx,ly,seen=0){
   const j=s==='sleep'?0:(Math.random()-.5)*(s==='open'?2:1.2);
   ctx.save(); ctx.translate(px+j,py);
@@ -977,15 +1016,17 @@ function drawGame(){
     ctx.globalCompositeOperation='lighter'; ctx.fillStyle='rgba(120,230,255,.35)'; circ(bx,by,9); ctx.globalCompositeOperation='source-over'; }
   const walk=Math.abs(p.vx)>.5&&p.onGround&&!p.cart?Math.sin(now*15)*3:0;
   for(const c of G.carts){ if(c.rider) continue; drawCart((c.x-cx)*T,(c.y-cy)*T); }
-  if((G.dying<=0||G.dying>1.1)&&!(p.inv>0&&Math.floor(now*14)%2)) drawKid((pcx-cx)*T,(p.y-cy)*T,p.facing,walk,G.shades);
+  for(const r of NET.rp.values()){ if(r.lv!==G.lv||r.dy) continue; const rx=(r.x+.35-cx)*T, ry=(r.y-cy)*T; if(rx<-60||rx>VW+60) continue;
+    drawKid(rx,ry,r.f||1,0,r.sh,r.c); if(r.cart) drawCart(rx-15.6,(r.y+1.15-cy)*T); }
+  if((G.dying<=0||G.dying>1.1)&&!(p.inv>0&&Math.floor(now*14)%2)) drawKid((pcx-cx)*T,(p.y-cy)*T,p.facing,walk,G.shades,NET.role==='guest'?NET.myColor:null);
   if(p.cart) drawCart((p.cart.x-cx)*T,(p.cart.y-cy)*T);
   drawWater(G.t,G.W,cx,cy);
   for(const q of parts){ ctx.fillStyle=q.c; ctx.globalAlpha=Math.min(1,q.t*2); rect((q.x-cx)*T,(q.y-cy)*T,q.s,q.s); } ctx.globalAlpha=1;
   const sx=(pcx-cx)*T, sy=(p.y+p.h/2-cy)*T, dg=ctx.createRadialGradient(sx,sy,T*4,sx,sy,T*17);
   dg.addColorStop(0,'rgba(3,5,3,0)'); dg.addColorStop(1,`rgba(3,5,3,${BG===1?.35:.5})`); ctx.fillStyle=dg; ctx.fillRect(-VW,-VH,VW*3,VH*3);
-  if(G.light){ const f=p.facing, ox=(pcx+f*.3-cx)*T, oy=(p.y+.45-cy)*T, L=7.5*T, s2=(.9+7.5*.5)*T;
-    ctx.globalCompositeOperation='lighter'; const g=ctx.createLinearGradient(ox,0,ox+f*L,0); g.addColorStop(0,'rgba(255,240,170,.42)'); g.addColorStop(1,'rgba(255,240,170,0)');
-    ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(ox,oy-4); ctx.lineTo(ox+f*L,oy-s2); ctx.lineTo(ox+f*L,oy+s2); ctx.lineTo(ox,oy+4); ctx.fill(); ctx.globalCompositeOperation='source-over'; }
+  if(G.light) drawCone((pcx+p.facing*.3-cx)*T,(p.y+.45-cy)*T,p.facing);
+  for(const r of NET.rp.values()) if(r.lv===G.lv&&r.light&&!r.dy) drawCone((r.x+.35+(r.f||1)*.3-cx)*T,(r.y+.45-cy)*T,r.f||1);
+  for(const r of NET.rp.values()) if(r.lv===G.lv&&!r.dy) osd(r.name||'',(r.x+.35-cx)*T,(r.y-cy)*T-8,18,'center',r.c||'#fff');
   for(const f of floaties){ ctx.globalAlpha=Math.min(1,f.t); osd(f.text,(f.x-cx)*T,(f.y-cy)*T,22,'center','#ffd23f'); } ctx.globalAlpha=1;
   ctx.restore();
   if(G.flash>0){ ctx.fillStyle=`rgba(255,20,20,${G.flash*.7})`; rect(0,0,VW,VH); }
@@ -999,6 +1040,7 @@ function drawGame(){
   osd('SP '+fmt(G.time),VW-22,68,24,'right','#d9dcc8');
   if(G.hard) osd('HARDCORE',VW-22,92,24,'right','#ff4a3d');
   if(G.fly) osd('FLYING · CAN’T GET HURT',VW-22,G.hard?116:92,24,'right','#ffd23f');
+  if(NET.role) osd(NET.role==='host'?`CODE ${NET.code} · ${NET.rp.size+1} PLAYING`:`${NET.rp.size+1} PLAYING`,VW-22,92+(G.hard?24:0)+(G.fly?24:0),22,'right','#9dff7a');
   osd('NOV. 24 1994',VW/2,VH-16,22,'center','rgba(233,237,220,.6)');
   if(G.gaze>.35&&!G.shades&&Math.floor(now*4)%2) osd('IT IS LOOKING',VW/2,VH-48,30,'center','#ff4a3d');
   if(msg.t>0&&msg.text){ ctx.font='26px VT323,monospace'; const lines=wrapText(msg.text,700), lh=26, h=lines.length*lh+14, w=Math.max(...lines.map(l=>ctx.measureText(l).width))+30;
@@ -1080,6 +1122,7 @@ $('edDone').onclick=()=>{ saveCourse(); ED=null; mode='menu'; renderCourses(); s
 
 /* ---------- overlays ---------- */
 function showOv(id){
+  if(id==='pause'){ $('inviteBtn').style.display=NET.role==='guest'?'none':''; $('quitBtn').textContent=NET.role==='guest'?'Leave game':'Quit'; }
   current=id; document.querySelectorAll('.ov').forEach(o=>o.classList.toggle('show',o.id===id));
   paused=id!==null; for(const k in keys) keys[k]=false; jumpBuf=0;
   document.documentElement.classList.toggle('playing',mode==='play'&&id===null);
@@ -1092,7 +1135,7 @@ document.querySelectorAll('.hardBtn').forEach(b=>b.onclick=()=>{ prog.hardOn=!pr
 function renderChannels(){
   $('chList').innerHTML=CH.map((c,i)=>{ const k=String(i), tot=c.t.reduce((a,v)=>a+(v===10),0);
     return `<div class="item"><div class="nm"><span class="ch">CH ${String(i+1).padStart(2,'0')}</span> <b>${esc(c.name)}</b>${i>=5?' <span class="hard">NEW</span>':''}<div class="note">${prog.clear[k]?`<span class="done">Cleared</span>${prog.hard[k]?' <span class="hard">· Hardcore</span>':''} · best ${fmt(prog.best[k])} · tapes ${prog.tapes[k]||0}/${tot}`:'Not cleared yet'}</div></div><button data-ch="${i}">Play</button></div>`; }).join('');
-  syncHard();
+  syncHard(); if(typeof hostLine==='function') hostLine();
 }
 $('chList').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const i=+b.dataset.ch; startLevel({...CH[i],ch:i,hard:prog.hardOn}); });
 function renderCourses(note){
@@ -1100,7 +1143,7 @@ function renderCourses(note){
     <button class="small" data-act="play" data-id="${esc(c.id)}">Play</button><button class="small amb" data-act="edit" data-id="${esc(c.id)}">Edit</button><button class="small" data-act="code" data-id="${esc(c.id)}">Code</button><button class="small red" data-act="del" data-id="${esc(c.id)}">Delete</button></div>`).join('')
     :'<p class="note">No courses yet. Name one above and press New course.</p>';
   $('storeNote').textContent=note||(storeOK?'':"This browser isn't keeping saves for this page. Copy a course code to keep a course.");
-  syncHard();
+  syncHard(); if(typeof hostLine==='function') hostLine();
 }
 const loadRec=c=>{ try{ const h=c.h||22; return {id:c.id,name:c.name,w:c.w,h,bg:c.bg||0,t:unrle(c.t,c.w*h)}; }catch(e){ return null; } };
 $('courseList').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; const rec=prog.courses.find(c=>c.id===b.dataset.id); if(!rec) return;
@@ -1126,14 +1169,17 @@ $('copyBtn').onclick=()=>{ const t=$('codeText'); t.select(); try{ navigator.cli
 $('resumeBtn').onclick=()=>showOv(null);
 $('restartBtn').onclick=()=>startLevel(G.src);
 $('respawnBtn').onclick=()=>{ tone(400,.1,'square',.03); startLevel(G.src); };
-function leaveRun(){ const src=G.src; G=null;
+function leaveRun(){
+  if(NET.role==='guest'){ netStop(); G=null; mode='menu'; showOv('menu'); joinMsg(''); return; }
+  const src=G.src; G=null; if(NET.role==='host'){ NET.src=null; broadcast({t:'wait'}); }
   if(src.test&&ED){ openEditor(ED); return; }
   mode='menu'; if(src.ch!=null){ renderChannels(); showOv('channels'); } else { renderCourses(); showOv('courses'); } }
 $('quitBtn').onclick=leaveRun; $('deadQuit').onclick=leaveRun;
 function showDone(){
   const src=G.src; $('doneTitle').textContent=G.hard?'HARDCORE CLEAR':'COURSE CLEAR';
   $('doneStats').innerHTML=`Time <b>${fmt(G.time)}</b> · Tapes <b>${G.got}/${G.tapesTotal}</b> · Signal lost <b>${G.deaths}</b>${G.tapesTotal&&G.got===G.tapesTotal?'<br><span class="done">Every tape found!</span>':''}${G.cheat?'<br><span class="note">You flew, so this run doesn’t count for records.</span>':''}`;
-  const btns=[]; if(src.ch!=null&&src.ch<CH.length-1) btns.push('<button data-d="next">Next channel ▶</button>');
+  const btns=[]; if(NET.role==='guest'){ $('doneStats').innerHTML+=`<br><span class="note">Waiting for ${esc(NET.hostName)} to pick the next course.</span>`; $('doneBtns').innerHTML='<button class="small" data-d="again">Play again</button><button class="small red" data-d="back">Leave game</button>'; showOv('done'); return; }
+  if(src.ch!=null&&src.ch<CH.length-1) btns.push('<button data-d="next">Next channel ▶</button>');
   if(src.ch===CH.length-1) $('doneTitle').textContent='END OF BROADCAST';
   btns.push('<button class="small" data-d="again">Play again</button>'); btns.push(`<button class="small amb" data-d="back">${src.test?'Back to editor':'Back'}</button>`);
   $('doneBtns').innerHTML=btns.join(''); showOv('done');
@@ -1147,6 +1193,160 @@ $('muteBtn').onclick=()=>{ initAudio(); setMuted(!muted); };
 $('fsBtn').onclick=()=>{ try{ if(document.fullscreenElement) document.exitFullscreen(); else $('wrap').requestFullscreen().catch(()=>{}); }catch(e){} };
 document.addEventListener('fullscreenchange',()=>{ $('fsBtn').textContent=document.fullscreenElement?'Exit fullscreen':'Fullscreen'; });
 if(!document.fullscreenEnabled) $('fsBtn').style.display='none';
+
+/* ---------- playing with friends ----------
+   Same setup as Scrap Circuit: PeerJS, a 4-letter code, the host's game stays open.
+   The host picks the course and everyone loads it. Each phone runs its own monsters;
+   positions, popped monsters and finishes are shared. */
+const NET={role:null,peer:null,conn:null,conns:new Map(),rp:new Map(),code:null,sendT:0,loading:null,lv:0,src:null,hostName:'',myColor:null};
+const NET_V=1, PEER_PREFIX='staticrun-v1-', CODE_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789', COLORS=['#c9a01d','#e2577a','#3fb8d8','#6fc94a'];
+const cleanName=n=>String(n||'').replace(/[^\w \-']/g,'').trim().slice(0,14)||'Friend';
+function me(){ if(!prog.me||!prog.me.id){ prog.me={id:newId(),name:''}; saveProg(); } return prog.me; }
+function setMyName(n){ me().name=cleanName(n); saveProg(); return prog.me.name; }
+function netSend(m){ if(NET.conn&&NET.conn.open) try{ NET.conn.send(m); }catch(e){} }
+function broadcast(m,except){ for(const [id,c] of NET.conns) if(c.open&&id!==except) try{ c.send(m); }catch(e){} }
+function netAll(m){ if(NET.role==='host') broadcast(m); else if(NET.role==='guest') netSend(m); }
+function loadPeerLib(){
+  if(window.Peer) return Promise.resolve();
+  if(NET.loading) return NET.loading;
+  const urls=['https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js','https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js'];
+  NET.loading=new Promise((res,rej)=>{ let k=0;
+    const next=()=>{ if(k>=urls.length){ NET.loading=null; rej(Error('lib')); return; }
+      const sc=document.createElement('script'); sc.src=urls[k++]; sc.onload=()=>window.Peer?res():next(); sc.onerror=next; document.head.appendChild(sc); };
+    next(); });
+  return NET.loading;
+}
+function levelPayload(src){ return {name:src.name,w:src.w,h:src.h||22,bg:src.bg||0,t:rle(src.t),tips:src.tips||[],ch:src.ch??null,hard:!!src.hard}; }
+function inviteStatus(t){ $('inviteMsg').textContent=t; }
+function joinMsg(t){ $('joinMsg').textContent=t; }
+function hostLine(){ const t=NET.role==='host'?`Hosting with code ${NET.code}. ${NET.rp.size?'Playing: '+[...NET.rp.values()].map(r=>r.name).join(', ')+'.':'Waiting for friends.'} Pick a course and everyone goes there.`:'';
+  document.querySelectorAll('.hostLine').forEach(e=>e.textContent=t); }
+function renderInvite(){
+  const on=NET.role==='host';
+  $('inviteOff').style.display=on?'none':''; $('inviteOn').style.display=on?'':'none';
+  if(on){ $('inviteCode').textContent=NET.code; const names=[...NET.rp.values()].map(r=>r.name); $('invitePlayers').textContent=names.length?`Playing now: ${names.join(', ')}`:'Waiting for friends to join…'; }
+  if(!$('hostName').value) $('hostName').value=me().name||'';
+  hostLine();
+}
+async function hostStart(){
+  if(NET.role) return;
+  NET.hostName=setMyName($('hostName').value||me().name||'Host');
+  inviteStatus('Starting…');
+  try{ await loadPeerLib(); }catch(e){ inviteStatus("Couldn't load the multiplayer helper. Check your internet connection and try again."); return; }
+  const open=attempt=>{
+    const code=Array.from({length:4},()=>CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)]).join('');
+    let peer; try{ peer=new Peer(PEER_PREFIX+code); }catch(e){ inviteStatus("Couldn't start sharing."); return; }
+    peer.on('open',()=>{ NET.role='host'; NET.peer=peer; NET.code=code; inviteStatus('');
+      if(G&&mode==='play'){ NET.src=G.src; NET.lv++; G.lv=NET.lv; } renderInvite(); tone(660,.1,'triangle',.04); });
+    peer.on('connection',conn=>hostConn(conn));
+    peer.on('disconnected',()=>{ try{ peer.reconnect(); }catch(e){} });
+    peer.on('error',err=>{ if(!NET.role){ peer.destroy(); if(err&&err.type==='unavailable-id'&&attempt<4) open(attempt+1); else inviteStatus("Couldn't start sharing. Check your internet and try again."); } });
+  };
+  open(0);
+}
+function hostConn(conn){
+  conn.on('data',d=>hostData(conn,d));
+  conn.on('close',()=>{ const id=conn.pid; if(id&&NET.conns.get(id)===conn){ NET.conns.delete(id); const r=NET.rp.get(id); NET.rp.delete(id); if(r&&G) say(`${r.name.toUpperCase()} LEFT.`,3); renderInvite(); } });
+  conn.on('error',()=>{});
+}
+function hostData(conn,d){
+  if(!d||typeof d!=='object'||NET.role!=='host') return;
+  if(d.t==='hello'){
+    if(d.v!==NET_V){ conn.send({t:'oldver'}); return; }
+    const id=String(d.id||newId()).slice(0,40);
+    if(NET.conns.size>=3&&!NET.conns.has(id)){ conn.send({t:'full'}); return; }
+    const old=NET.conns.get(id); if(old&&old!==conn) try{ old.close(); }catch(e){}
+    conn.pid=id; NET.conns.set(id,conn);
+    const used=new Set([...NET.rp.values()].filter(r=>r.id!==id).map(r=>r.c)), c=COLORS.slice(1).find(x=>!used.has(x))||COLORS[1], name=cleanName(d.name);
+    NET.rp.set(id,{id,name,c,x:0,y:0,tx:0,ty:0,lv:-1,f:1});
+    conn.send({t:'welcome',c,host:NET.hostName||'Host',lv:NET.lv,L:(NET.src&&G&&mode==='play')?levelPayload(NET.src):null});
+    if(G) say(`${name.toUpperCase()} JOINED!`,3); tone(660,.1,'triangle',.04); setTimeout(()=>tone(990,.12,'triangle',.04),100); renderInvite(); return;
+  }
+  const r=NET.rp.get(conn.pid); if(!r) return;
+  if(d.t==='me'){ const lv=d.lv|0; if(lv!==r.lv){ r.x=+d.x||0; r.y=+d.y||0; } Object.assign(r,{tx:+d.x||0,ty:+d.y||0,lv,f:d.f<0?-1:1,cart:!!d.cart,light:!!d.light,sh:!!d.sh,dy:!!d.dy}); }
+  else if(d.t==='pop'){ applyPop(d); broadcast(d,conn.pid); }
+  else if(d.t==='won'){ applyWon(d); broadcast(d,conn.pid); }
+}
+async function joinGame(rawCode,name){
+  const code=String(rawCode).toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(code.length!==4) return joinMsg('Invite codes are 4 letters and numbers.');
+  if(NET.role) return;
+  joinMsg('Connecting…'); $('joinBtn').textContent='Connecting…';
+  const reset=t=>{ joinMsg(t); $('joinBtn').textContent='Join'; };
+  try{ await loadPeerLib(); }catch(e){ return reset("Couldn't load the multiplayer helper. Check your internet connection."); }
+  const m=me(); setMyName(name);
+  let done=false, peer;
+  try{ peer=new Peer(); }catch(e){ return reset("Couldn't connect."); }
+  NET.peer=peer;
+  const fail=t=>{ if(done) return; done=true; clearTimeout(timer); try{ peer.destroy(); }catch(e){} NET.peer=null; NET.conn=null; reset(t); };
+  const timer=setTimeout(()=>fail("Couldn't reach that game. Check the code, make sure the host has Invite friends turned on, and try again. Being on the same Wi-Fi helps."),15000);
+  peer.on('error',err=>{ if(!done) fail(err&&err.type==='peer-unavailable'?'No game with that code right now. Check the code, and make sure the host has Invite friends turned on.':"Couldn't connect. Check your internet and try again."); });
+  peer.on('open',()=>{
+    const conn=peer.connect(PEER_PREFIX+code,{reliable:true}); NET.conn=conn;
+    conn.on('open',()=>conn.send({t:'hello',v:NET_V,id:m.id,name:m.name}));
+    conn.on('data',d=>{
+      if(!d||typeof d!=='object') return;
+      if(d.t==='welcome'&&!done){ done=true; clearTimeout(timer); $('joinBtn').textContent='Join'; joinMsg(''); guestStart(d); }
+      else if(d.t==='full') fail('That game is full. Four players is the most.');
+      else if(d.t==='oldver') fail("Your game and your friend's game are different versions. Both of you reload the page, then try again.");
+      else guestData(d);
+    });
+    conn.on('close',()=>{ if(NET.role==='guest') lostHost(); else fail('The host closed the connection.'); });
+  });
+}
+function guestStart(d){ NET.role='guest'; NET.hostName=cleanName(d.host); NET.myColor=String(d.c||COLORS[1]).slice(0,9); if(d.L) guestLevel(d.lv|0,d.L); else guestWait(); }
+function guestLevel(lv,L){
+  try{ const w=L.w|0, h=(L.h|0)||22; if(w<20||w>600||h<16||h>60) throw Error('size');
+    const tips=Array.isArray(L.tips)?L.tips.filter(a=>Array.isArray(a)).map(a=>[+a[0]||0,String(a[1]).slice(0,140)]):[];
+    const ch=L.ch==null?null:clamp(L.ch|0,0,CH.length-1);
+    const src={name:String(L.name||'Course').slice(0,40),w,h,bg:clamp(L.bg|0,0,SCENES.length-1),t:unrle(L.t,w*h),tips,ch,hard:!!L.hard,net:true};
+    NET.lv=lv; NET.rp.clear(); startLevel(src); say(`PLAYING WITH ${NET.hostName.toUpperCase()}.`,3);
+  }catch(e){ lostHost("Couldn't load the host's course."); }
+}
+function guestWait(){ G=null; mode='menu'; NET.rp.clear(); $('waitMsg').textContent=`Waiting for ${NET.hostName} to pick a course…`; showOv('wait'); }
+function guestData(d){
+  if(!d||NET.role!=='guest') return;
+  if(d.t==='level') guestLevel(d.lv|0,d.L||{});
+  else if(d.t==='wait') guestWait();
+  else if(d.t==='st'){ const my=me().id, seen=new Set();
+    for(const q of d.pl||[]){ if(q.id===my) continue; seen.add(q.id); let r=NET.rp.get(q.id); const lv=q.lv|0;
+      if(!r){ r={id:q.id}; NET.rp.set(q.id,r); } if(r.lv!==lv){ r.x=+q.x||0; r.y=+q.y||0; }
+      Object.assign(r,{name:cleanName(q.n),c:String(q.c||'#fff').slice(0,9),tx:+q.x||0,ty:+q.y||0,lv,f:q.f<0?-1:1,cart:!!q.cart,light:!!q.light,sh:!!q.sh,dy:!!q.dy}); }
+    for(const id of [...NET.rp.keys()]) if(!seen.has(id)) NET.rp.delete(id); }
+  else if(d.t==='pop') applyPop(d);
+  else if(d.t==='won') applyWon(d);
+  else if(d.t==='bye') lostHost('The host stopped sharing.');
+}
+function applyPop(d){ if(!G||d.lv!==G.lv) return; const m=G.mobs[d.i|0]; if(m&&!m.dead) popMob(m,true); }
+function applyWon(d){ if(!G||d.lv!==G.lv) return; say(`${cleanName(d.name).toUpperCase()} REACHED THE EXIT!`,4); tone(784,.15,'triangle',.04); }
+function lostHost(text){ if(NET.role!=='guest') return; netStop(); G=null; mode='menu'; showOv('menu'); joinMsg(text||'Lost the connection to the host.'); }
+function netStop(){
+  if(NET.role==='host') broadcast({t:'bye'});
+  const peer=NET.peer; setTimeout(()=>{ try{ peer&&peer.destroy(); }catch(e){} },200);
+  NET.role=null; NET.peer=null; NET.conn=null; NET.conns.clear(); NET.rp.clear(); NET.code=null; NET.src=null; renderInvite();
+}
+function netTick(dt){
+  for(const r of NET.rp.values()) if(r.tx!==undefined){ r.x+=(r.tx-r.x)*Math.min(1,dt*12); r.y+=(r.ty-r.y)*Math.min(1,dt*12); }
+  if(!G||mode!=='play') return;
+  NET.sendT-=dt; if(NET.sendT>0) return; NET.sendT=1/12;
+  const p=G.p, st={x:+p.x.toFixed(2),y:+p.y.toFixed(2),f:p.facing,cart:p.cart?1:0,light:G.light?1:0,sh:G.shades?1:0,dy:G.dying>0?1:0,lv:G.lv};
+  if(NET.role==='guest'){ netSend({t:'me',...st}); return; }
+  if(!NET.conns.size) return;
+  const pl=[{id:'host',n:NET.hostName||'Host',c:COLORS[0],...st}];
+  for(const r of NET.rp.values()) pl.push({id:r.id,n:r.name,c:r.c,x:+(+r.tx).toFixed(2),y:+(+r.ty).toFixed(2),f:r.f,cart:r.cart?1:0,light:r.light?1:0,sh:r.sh?1:0,dy:r.dy?1:0,lv:r.lv});
+  broadcast({t:'st',pl});
+}
+let inviteReturn=null;
+function openInvite(){ inviteReturn=current; inviteStatus(''); renderInvite(); showOv('invite'); }
+document.querySelectorAll('.inviteOpen').forEach(b=>b.onclick=openInvite);
+$('inviteBtn').onclick=openInvite;
+$('inviteClose').onclick=()=>{ const r=inviteReturn||'menu'; if(r==='channels') renderChannels(); if(r==='courses') renderCourses(); showOv(r); };
+$('hostBtn').onclick=()=>{ initAudio(); hostStart(); };
+$('stopHostBtn').onclick=()=>{ netStop(); inviteStatus('Sharing stopped. Your friends were sent back to their menus.'); };
+$('joinBtn').onclick=()=>{ initAudio(); joinGame($('joinCode').value,$('joinName').value); };
+$('joinCode').addEventListener('keydown',e=>{ if(e.key==='Enter') $('joinBtn').click(); });
+$('waitLeave').onclick=()=>{ netStop(); mode='menu'; showOv('menu'); };
+$('joinName').value=me().name||'';
 
 /* ---------- input ---------- */
 window.addEventListener('keydown',e=>{
@@ -1200,12 +1400,14 @@ let touchState='';
 function syncTouch(){ const s=mode==='play'&&G?(G.potions>0?'p':'')+(G.canFly?'t':'')+(G.fly?'f':''):''; if(s===touchState) return; touchState=s;
   const r=document.documentElement.classList; r.toggle('haspotion',s.includes('p')); r.toggle('testing',s.includes('t')); r.toggle('flying',s.includes('f')); }
 document.addEventListener('visibilitychange',()=>{ if(document.hidden&&mode==='play'&&current===null&&G&&!G.won&&!(G.dying>0)) showOv('pause'); });
+window.addEventListener('pagehide',()=>{ if(NET.role==='host') broadcast({t:'bye'}); });
 
 /* ---------- go ---------- */
 ensureArt(0); makeFx();
 let last=performance.now();
 function frame(t){ const dt=clamp((t-last)/1000,0,.05); last=t; now+=dt;
   try{
+    if(NET.role) netTick(dt);
     if(mode==='play'&&G){ if(!paused) update(dt); if(G) drawGame();
       setLevels(paused?0:(G&&!G.shades?G.gaze*.05:0), paused?0:.018); }
     else if(mode==='edit'&&ED) drawEditor();
@@ -1214,7 +1416,7 @@ function frame(t){ const dt=clamp((t-last)/1000,0,.05); last=t; now+=dt;
   }catch(err){ console.error(err); }
   requestAnimationFrame(frame); }
 requestAnimationFrame(frame);
-window.__sr={ get G(){return G;}, CH, startLevel, keys, setJump:()=>{jumpBuf=.14;}, update, get mode(){return mode;}, openEditor, blankCourse, get ED(){return ED;}, fromCode, toCode, showOv, drink, MOB };
+window.__sr={ get G(){return G;}, NET, popMob, leaveRun, CH, startLevel, keys, setJump:()=>{jumpBuf=.14;}, update, get mode(){return mode;}, openEditor, blankCourse, get ED(){return ED;}, fromCode, toCode, showOv, drink, MOB };
 }
 </script>
 </body>
